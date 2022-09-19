@@ -6,6 +6,11 @@
 #
 # Serial: visit -cli -nowin -s GetMax.py -database "..." -variable "..." -output "..."
 # Parallel: visit -nn <num_nodes> -np <procs_per_node> -cli -nowin -s GetMax.py  -database "..." -variable "..." -output "..."
+#
+# If using slurm, one can allocate with
+#
+# > salloc --account=nnXXXXk --time=00:30:00 --nodes=4 --qos=devel 
+# 
 
 import argparse
 
