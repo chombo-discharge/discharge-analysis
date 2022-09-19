@@ -16,13 +16,13 @@ import argparse
 
 FileFormat = "{: <20} {: <20} {: <20} {: <20} {: <20}\n"
 
-# Input argument parser.
+# # Input argument parser.
 parser = argparse.ArgumentParser()
 parser.add_argument('-database',    type=str, help="Absolute path to database. Use e.g. with 'plt/simulation2d.step*.hdf5 database' if opening multiple files", required=True)
 parser.add_argument('-variable',    type=str, help="Which variable to query", required=True)
 parser.add_argument('-output_file', type=str, help="Output file", default="output.dat", required=False)
 
-args = parser.parse_args()    
+args,unknown = parser.parse_known_args()
 
 # Open output file and write header
 fout = open(args.output_file, 'w')
