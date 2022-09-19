@@ -31,6 +31,7 @@ fout.write("# Variable = " + args.variable + "\n")
 
 header = ["# Time", "Max val", "x", "y", "z"]
 fout.write(FileFormat.format(*header))
+fout.close()
 
 # Open database.
 OpenDatabase(args.database)
@@ -49,13 +50,14 @@ for i in range(TimeSliderGetNStates()):
 
     data = [curTime, curMax, maxCoord[0], maxCoord[1], maxCoord[2]]
 
+    # Opening/closing because file buffers are not always immediately updated on
+    # the clusters we use. 
+    fout = open(args.output_file, 'w')
     fout.write(FileFormat.format(*data))
+    fout.close()
 
 # Close database
 DeleteAllPlots()
 CloseDatabase(args.database)
-
-# Close output file
-fout.close()
 
 exit()
