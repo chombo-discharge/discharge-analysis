@@ -6,8 +6,6 @@
 #
 # Serial: visit -cli -nowin -s GetMax.py -database "..." -variable "..." -output "..."
 # Parallel: visit -nn <num_nodes> -np <procs_per_node> -cli -nowin -s GetMax.py  -database "..." -variable "..." -output "..."
-#
-# The database and variable
 
 import argparse
 
