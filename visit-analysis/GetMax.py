@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-database',    type=str, help="Absolute path to database. Use e.g. with 'plt/simulation2d.step*.hdf5 database' if opening multiple files", required=True)
 parser.add_argument('-variable',    type=str, help="Which variable to query", required=True)
 parser.add_argument('-output_file', type=str, help="Output file", default="output.dat", required=False)
-parser.add_arguument('-each_step', type=int, help"Every nth step", default=1, required=False)
+parser.add_arguument('-every_nth', type=int, help"Every nth step", default=1, required=False)
 
 args,unknown = parser.parse_known_args()
 
@@ -41,7 +41,7 @@ OpenDatabase(args.database)
 AddPlot("Pseudocolor", args.variable)
 DrawPlots()
 
-for i in range(0,TimeSliderGetNStates(), args.each_step):
+for i in range(0,TimeSliderGetNStates(), args.every_nth):
     SetTimeSliderState(i)
 
     curTime  = GetQueryOutputValue(Query("Time"))
