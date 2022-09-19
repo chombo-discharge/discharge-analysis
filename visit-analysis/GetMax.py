@@ -52,7 +52,7 @@ for i in range(TimeSliderGetNStates()):
 
     # Opening/closing because file buffers are not always immediately updated on
     # the clusters we use. 
-    fout = open(args.output_file, 'w')
+    fout = open(args.output_file, 'a')
     fout.write(FileFormat.format(*data))
     fout.close()
 
