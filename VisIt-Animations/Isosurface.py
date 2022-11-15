@@ -75,11 +75,11 @@ def set_default_view():
     
     ResetView()
     view            = GetView3D()
-    view.focus      = (5.0E-2, 5.0E-2, 5.0E-2)
+    view.focus      = (0.00, 0.05, 0.05)
     view.viewUp     = (0, 0, 1)
     view.viewNormal = (0.5, 1, 0);
-    view.imageZoom  = 1
-    view.imagePan   = (0, 0)
+    view.imageZoom  = 7
+    view.imagePan   = (0, 0.04)
     SetView3D(view)
 
 def set_annotation():
@@ -145,6 +145,8 @@ def draw_isosurface(color_variable, surface_variable, slice_val):
     p.min, p.minFlag = 0.0, 1
     p.max, p.maxFlag = 1E7, 1
     p.legendFlag = 0
+    p.centering = 1
+    p.smoothingLevel=1
     SetPlotOptions(p)
 
     # Slice by isosurface
