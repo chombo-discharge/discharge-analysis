@@ -6,22 +6,40 @@ This should work for 3D input data. 2D has not been tested (nor does it make any
 
 dim          = 3
 basename     = "simulation"
-step         = 20
+step         = 625
 directory    = "/home/robertm/Projects/chombo-discharge/Exec/Examples/ItoPlasma/plt"
 framename    = "patches"
 
-stripCoord   = "x"
-nsteps       = 11
-zoom1        = 1.0
-zoom2        = 5.0
-nzooms       = 10
+stripCoord = "x"
+prune_frames = 5
+transition_frames = 5
 
+'''
+Colors to use when plotting levels
+'''
 level_colors = [(255,0,0,255),
                 (0,255,0,255),
                 (0,0,255,255),
                 (125,125,0,255),
                 (0,125,125,255),
                 (125,0,125,255)]
+
+# First view that we use
+ResetView()
+view1 = View3DAttributes()
+view1.focus      = (0.05, 0.05, 0.04)
+view1.viewUp     = (0, 0, 1)
+view1.viewNormal = (-0.5, 1, 0.1);
+view1.imageZoom  = 5.0
+view1.imagePan   = (0, 0.0)
+
+# Second view that we use
+view2 = View3DAttributes()
+view2.focus      = (0.05, 0.05, 0.03)
+view2.viewUp     = (0, 0, 1)
+view2.viewNormal = (-0.5, 1, 0.1);
+view2.imageZoom  = 20.0
+view2.imagePan   = (0, 0.0)
 
 def set_output(prefix, frame):
     '''
@@ -39,28 +57,6 @@ def set_output(prefix, frame):
     satts.outputToCurrentDirectory = 0
     satts.outputDirectory = "./Patches-frames"
     SetSaveWindowAttributes(satts)
-
-def set_default_view():
-    '''
-    Set the default view.
-    '''
-    
-    ResetView()
-    view            = GetView3D()
-    view.focus      = (0.05, 0.05, 0.05)
-    view.viewUp     = (0, 0, 1)
-    view.viewNormal = (-0.5, 1, 0.1);
-    view.imageZoom  = zoom1
-    view.imagePan   = (0, 0.00)
-    SetView3D(view)
-
-def set_zoom(zoom):
-    '''
-    Zoom 
-    '''
-    view = GetView3D()
-    view.imageZoom = zoom
-    SetView3D(view)
 
 def set_annotation():
     '''
@@ -166,101 +162,127 @@ def draw_grid(lvl):
     silr.TurnOnSet(lvl+1)
     SetPlotSILRestriction(silr,0)
 
-def make_frames(frame_index, minLevel, maxLevel):
+def plot_patches(level, istep, s):
     ''' 
-    Create frames
+    Plot grid patches
     '''
-    for stripLevel in range(minLevel, maxLevel+1, 1):
-        for istep in range(0, nsteps, 1):
-            # Open the data base. 
-            DeleteAllPlots()
-            f = directory + "/" + basename + ".step" + str(step).rjust(7,'0') + "." + str(dim) + "d.hdf5"
-            OpenDatabase(f)
-            
-            # Add a ghost plot for getting extensions of current level being plotted. This plot
-            # is deleted afterwards.
-            AddPlot("Pseudocolor", "Electric field_magnitude")
-            silr = SILRestriction()
-            silr.TurnOffAll();
-            silr.TurnOnSet(stripLevel+1)
-            SetPlotSILRestriction(silr,0)
-            DrawPlots()
-            Query('SpatialExtents', use_actual_data=1)
-            s = GetQueryOutputValue()
-            DeleteAllPlots()
-
-            # Determine the subset box
-            xmin = -100.
-            xmax =  100.
-            ymin = -100.
-            ymax =  100.
-            zmin = -100.
-            zmax =  100.        
+    # Determine the subset box
+    xmin = -100.
+    xmax =  100.
+    ymin = -100.
+    ymax =  100.
+    zmin = -100.
+    zmax =  100.        
         
-            if(stripCoord == "x"):
-                xmin = s[0] + istep * (s[1]-s[0])/(nsteps-1)
-                xmax = s[1]
-            elif(stripCoord == "y"):
-                ymin = s[2] + istep * (s[3]-s[2])/(nsteps-1)
-                ymax = s[3]
-            elif(stripCoord == "z"):
-                zmin = s[4] + istep * (s[5]-s[4])/(nsteps-1)
-                zmax = s[4]
+    if(stripCoord == "x"):
+        xmin = s[0] + istep * (s[1]-s[0])/(prune_frames-1)
+        xmax = s[1]
+    elif(stripCoord == "y"):
+        ymin = s[2] + istep * (s[3]-s[2])/(prune_frames-1)
+        ymax = s[3]
+    elif(stripCoord == "z"):
+        zmin = s[4] + istep * (s[5]-s[4])/(prune_frames-1)
+        zmax = s[4]
 
-            # Draw embedded boundary
-            draw_boundaries()            
+    # Draw embedded boundary
+    draw_boundaries()            
 
-            # Strip this level
-            draw_patches(stripLevel)
-            set_box(xmin, xmax, ymin, ymax, zmin, zmax)
+    # Strip this level
+    draw_patches(lvl)
+    set_box(xmin, xmax, ymin, ymax, zmin, zmax)
         
-            draw_grid(stripLevel)
-            set_box(xmin, xmax, ymin, ymax, zmin, zmax)
+    draw_grid(lvl)
+    set_box(xmin, xmax, ymin, ymax, zmin, zmax)
 
-            # Add in the finer level
-            if(stripLevel < maxLevel):
-                draw_patches(stripLevel+1)
+    # Add in the finer level. We also transform those patches to prevent surfaces
+    # from overlapping
+    draw_patches(lvl+1)
 
-                # Transform by some tiny amount to prevent surfaces from overlapping
-                AddOperator("Transform")
-                t = TransformAttributes()
-                t.doScale= 1
-                t.scaleX = 1.0001
-                t.scaleY = 1.0001
-                t.scaleZ = 1.0001
-                SetOperatorOptions(t)                    
-
-                draw_grid(stripLevel+1)                        
-
-            # Draw and save
-            DrawPlots()
+    AddOperator("Transform")
+    t = TransformAttributes()
+    t.doScale= 0
+    t.scaleX = 1.0001
+    t.scaleY = 1.0001
+    t.scaleZ = 1.0001
+    SetOperatorOptions(t)                    
         
-            # Set name and save window
-            set_output(framename, frame_index)        
-            SaveWindow()
+    draw_grid(lvl+1)
 
-            # Clean up stuff
-            DeleteAllPlots()
-            CloseDatabase(f)
-            ClearCacheForAllEngines()
-
-            # Go to next frame. 
-            frame_index += 1
-
-    return frame_index
-
-# Default things like view, annotation, render, slider, etc. 
-set_default_view()
+# Default things like view, annotation, render, slider, etc.
 set_annotation()
 set_render_attributes()
 
+# Open the data base. 
+f = directory + "/" + basename + ".step" + str(step).rjust(7,'0') + "." + str(dim) + "d.hdf5"
+OpenDatabase(f)
+
 # Make frames using the first view.
 fidx = 0
-fidx = make_frames(fidx,1,3)
+minLevel = 0
+maxLevel = 2
 
-# Make frames using the second view
-set_zoom(zoom2)
-fidx = make_frames(fidx,3,4)
+lvl   = minLevel
+istep = 0
+s     = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+for lvl in range(minLevel, maxLevel+1, 1):
+    for istep in range(0, prune_frames, 1):
+        # Add a ghost plot for getting extensions of current level being plotted. This plot
+        # is deleted afterwards.
+        AddPlot("Pseudocolor", "Electric field_magnitude")
+        silr = SILRestriction()
+        silr.TurnOffAll();
+        silr.TurnOnSet(lvl+1)
+        SetPlotSILRestriction(silr,0)
+        DrawPlots()
+        Query('SpatialExtents', use_actual_data=1)
+        s = GetQueryOutputValue()
+        DeleteAllPlots()
+
+        # Add patches and EB
+        plot_patches(lvl, istep, s)
+
+        # Draw and save
+        DrawPlots()
+        SetView3D(view1)        
+        
+        # Set name and save window
+        set_output(framename, fidx)        
+        SaveWindow()
+
+        # Delete plots and clear cache. 
+        DeleteAllPlots()
+        ClearCacheForAllEngines()
+
+        # Proceed to next frame. 
+        fidx += 1        
+
+# Gradually transition to second view
+for i in range(0, transition_frames):
+
+    # Add patches and EB
+    plot_patches(lvl, istep, s)
+
+    # Draw. Interpolate the camera position.
+    # Interpolate camera position
+    DrawPlots()
+    t = float(i) / float(transition_frames-1)
+    v = EvalLinear(t, view1, view2)
+    SetView3D(v)    
+        
+    # Set name and save window
+    set_output(framename, fidx)        
+    SaveWindow()
+
+    # Delete plots and clear cache. 
+    DeleteAllPlots()
+    ClearCacheForAllEngines()
+    
+    # Proceed to next frame. 
+    fidx += 1            
+
+# Close DB and exit.
+DeleteAllPlots()
+CloseDatabase(f)
 
 exit()
 
