@@ -1,20 +1,18 @@
-# Run this with
-#
-# Normal job:
-# -----------
-# > salloc --account=nn9453k --time=3:00:00 --nodes=4
-# > visit -nn 4 -np 128 -cli -nowin -s electrons.py
-#
-# Devel job:
-# -----------
-# > salloc --account=nn9453k --time=0:30:00 --nodes=4 --qos=devel
-# > visit -nn 4 -np 128 -cli -nowin -s electrons.py
-#
-# Preproc job:
-# -----------
-# > salloc --account=nn9453k --time=0:30:00 --nodes=1 --qos=preproc
-# > visit -nn 1 -np 32 -cli -nowin -s electrons.py
-#
+'''
+This script lets VisIt generate frames of an isosurface (for making a movie or GIF).
+
+Parameters:
+dim         (int)    : Dimension
+basename    (string) : Plot file name prefix
+directory   (string) : Path to plot files
+framename   (string) : Prefix for frame names
+color_field (string) : Variable to plot
+slice_field (string) : Variable to slice plot by (i.e, the isosurface variable)
+slice_value (string) : Isosurface value
+firstframe  (int)    : First plot file to use
+lastframe   (int)    : Last plot file to use
+framestep   (int)    : Increment between plot files
+'''
 
 dim          = 3
 basename     = "simulation"
