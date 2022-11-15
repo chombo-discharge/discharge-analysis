@@ -22,7 +22,7 @@ directory    = "/home/robertm/Projects/chombo-discharge/Exec/Examples/ItoPlasma/
 framename    = "electrons"
 color_field  = "Electric field_magnitude"
 slice_field  = "Electron phi"
-slice_value  = 1.E10
+slice_value  = 1.E18
 firstframe   = 0
 lastframe    = 20
 framestep    = 1
@@ -61,7 +61,7 @@ def set_output(prefix, frame):
     '''
     satts          = SaveWindowAttributes()
     satts.family   = 0
-    satts.width    = 1024
+    satts.width    = 2048
     satts.height   = 1024
     satts.fileName = str(prefix) + str(format(frame, "05d"))
     satts.outputToCurrentDirectory = 0
@@ -75,10 +75,10 @@ def set_default_view():
     
     ResetView()
     view            = GetView3D()
-    view.focus      = (1.0E-2, 1.0E-2, 1.0E-2)
+    view.focus      = (5.0E-2, 5.0E-2, 5.0E-2)
     view.viewUp     = (0, 0, 1)
-    view.viewNormal = (0, 1, 0);
-    view.imageZoom  = 2.3
+    view.viewNormal = (0.5, 1, 0);
+    view.imageZoom  = 1
     view.imagePan   = (0, 0)
     SetView3D(view)
 
@@ -90,13 +90,13 @@ def set_annotation():
     atts = AnnotationAttributes()
     atts.databaseInfoTimeScale  = 1E9
     atts.axes2D.visible         = 0
-    atts.axes3D.visible         = 0
+    atts.axes3D.visible         = 1
     atts.axes3D.setBBoxLocation = 0
     atts.userInfoFlag           = 0
-    atts.databaseInfoFlag       = 0
+    atts.databaseInfoFlag       = 1
     atts.legendInfoFlag         = 1
-    atts.axes3D.triadFlag       = 0
-    atts.axes3D.bboxFlag        = 0
+    atts.axes3D.triadFlag       = 1
+    atts.axes3D.bboxFlag        = 1
     
     SetAnnotationAttributes(atts)
 
@@ -152,13 +152,16 @@ def draw_isosurface(color_variable, surface_variable, slice_val):
     s = IsosurfaceAttributes()
     s.contourNLevels = 1
     s.variable       = surface_variable
-    s.contourValue   = slice_val
-    
+    s.minFlag = 1
+    s.min = slice_val
+
     SetOperatorOptions(s)
 
     
 def set_slider():
-    ''' Set time slider '''
+    ''' 
+    Set time slider
+    '''
     slider = CreateAnnotationObject("TimeSlider")
     slider.text = "Time = $time ns"
     slider.shaded=0
@@ -189,7 +192,7 @@ for ts in range(firstframe, lastframe+framestep, framestep):
     # Draw and save
     DrawPlots()
 
-    # Modify the label.
+    # Modify the label if there is one. 
     isoPlot  = GetAnnotationObjectNames()[2]
     isoAnnot = GetAnnotationObject(isoPlot)
     isoAnnot.drawMinMax = 0
