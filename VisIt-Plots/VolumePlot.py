@@ -8,9 +8,8 @@ step         = 1250
 directory    = "/home/robertm/Projects/chombo-discharge/Exec/Examples/ItoPlasma/plt"
 do_eb        = True
 do_volume    = True
-
-# For drawing the isosurface
-variable  = "Electron phi"
+dark_bg      = False
+variable     = "Electron phi"
 
 def set_annotation():
     '''
@@ -27,8 +26,11 @@ def set_annotation():
     atts.legendInfoFlag         = 0
     atts.axes3D.triadFlag       = 0
     atts.axes3D.bboxFlag        = 1
-    atts.backgroundColor        = (0,0,0,255)
-    atts.foregroundColor        = (255,255,255,255)    
+
+    if(dark_bg):
+        atts.backgroundColor = (0,0,0,255)
+        atts.foregroundColor = (255,255,255,255)
+        
     SetAnnotationAttributes(atts)
 
 def set_render_attributes():
@@ -37,11 +39,13 @@ def set_render_attributes():
     '''
     
     ratts = RenderingAttributes()
-    ratts.antialiasing  = 0
+    ratts.antialiasing  = 1
     ratts.specularFlag  = 1
     ratts.specularCoeff = 0.6
     ratts.specularPower = 10
     ratts.specularColor = (255, 255, 255, 255)
+    ratts.scalableActivationMode = ratts.Always
+    
     SetRenderingAttributes(ratts)
 
 def draw_boundaries():
@@ -53,69 +57,55 @@ def draw_boundaries():
     batts = BoundaryAttributes()
     batts.legendFlag = 0
     batts.colorType  = batts.ColorByMultipleColors
-    batts.SetMultiColor(0, (123, 123, 123, 255))
-    batts.SetMultiColor(1, (123, 123, 123, 255))
+    batts.SetMultiColor(0, (200, 200, 200, 255))
+    batts.SetMultiColor(1, (200, 200, 200, 255))
     SetPlotOptions(batts)
-
 
 def draw_volume(var):
     AddPlot("Volume", var)
 
-    silr = SILRestriction()
-    silr.TurnOffAll();
-    silr.TurnOnSet(0)
-    silr.TurnOnSet(1)
-    SetPlotSILRestriction(silr,0)    
-    
+    # For turning off levels
+    # silr = SILRestriction()
+    # silr.TurnOffSet(5);   
+    # silr.TurnOffSet(6);
+    # SetPlotSILRestriction(silr,0)    
+
     vatts = VolumeAttributes()
     vatts.legendFlag     = 0
-    vatts.samplesPerRay  = 50
+    vatts.samplesPerRay  = 500
     vatts.rendererType   = vatts.RayCastingOSPRay
     vatts.useColorVarMin = 1
     vatts.useColorVarMax = 1
-    vatts.colorVarMin    = 1E10
-    vatts.colorVarMax    = 1E20
-    vatts.scaling        = vatts.Linear    
+    vatts.colorVarMin    = 0.0
+    vatts.colorVarMax    = 2.0
+    vatts.scaling        = vatts.Linear
     vatts.smoothData     = 1
     vatts.lightingFlag   = 1
-    vatts.materialProperties = (0.1, 0.5, 0.05, 10)        
+    vatts.materialProperties = (0.0, 0.15, 0.00, 10)        
     vatts.opacityAttenuation = 1.0
-    vatts.lowGradientLightingReduction = vatts.Medium
+    vatts.lowGradientLightingReduction = vatts.Higher
+    vatts.rendererSamples = 2
+    vatts.gradientType = 0
 
     # Monkey with opacity
     opacity = vatts.freeformOpacity
     y = list(opacity)
-    for i in range(len(opacity)):
-        y[i] = 254
+    for i in range(0,len(opacity)):
+        y[i] = max(0,i-30)
     vatts.freeformOpacity = tuple(y)
-    
-    vatts.useOpacityVarMin = 0
-    vatts.opacityVarMin=1E14
-    vatts.useOpacityVarMax = 0
-    vatts.opacityVarMin=1E20
-    vatts.ospraySpp = 5
+
+    vatts.ospraySpp = 1
+    vatts.osprayMinContribution=0.000
+    vatts.osprayAoDistance=0.01
+    vatts.osprayAoSamples=5
     vatts.osprayOneSidedLightingFlag = 0
-    vatts.osprayMinContribution=0.0000
-    vatts.ospraySingleShadeFlag=1
-    vatts.osprayAoDistance=0.001
-    vatts.osprayAoSamples=0
+    vatts.ospraySingleShadeFlag=0    
     vatts.osprayAoTransparencyEnabledFlag = 0
+    vatts.osprayShadowsEnabledFlag = 0
+    vatts.osprayUseGridAcceleratorFlag = 0
     
+    SetPlotOptions(vatts)
     print(vatts)
-    SetPlotOptions(vatts)        
-
-    AddOperator("Box")
-    batts = BoxAttributes()
-    batts.minx = 0.04
-    batts.maxx = 0.06
-    batts.miny = 0.04
-    batts.maxy = 0.06
-    batts.minz = 0.04
-    batts.maxz = 0.052
-    batts.amount = 0
-    SetOperatorOptions(batts)    
-
-
 
 # Default things like view, annotation, render, slider, etc.
 set_annotation()
@@ -129,16 +119,19 @@ OpenDatabase(f)
 if(do_eb):
     draw_boundaries()
 if(do_volume):
-    draw_volume(variable)
+    # Scaling because VisIt-OSPRay can't handle huge floating point numbers. Thanks to the VisIt
+    # folks for not telling anyone about this.
+    DefineScalarExpression("scaled_variable", "<" + variable + ">" + "* 1E-20")
+    draw_volume("scaled_variable")
 
 DrawPlots()
 
 ResetView()
 view = View3DAttributes()
-view.focus      = (0.05, 0.05, 0.05)
+view.focus      = (0.05, 0.05, 0.045)
 view.viewUp     = (0, 0, 1)
-view.viewNormal = (0, 1, 0);
-view.imageZoom  = 40
+view.viewNormal = (0.0, 1, 0.0);
+view.imageZoom  = 50
 view.imagePan   = (0, 0.0)
 SetView3D(view)
 
