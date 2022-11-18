@@ -29,18 +29,19 @@ transLevel = 3
 Colors to use when plotting levels
 '''
 A = 255
-B = 32
-C = 224
+B = 224
+C = 32
+D = 128
 opacity = 220
-level_colors = [(A,B,B,opacity),
-                (B,A,B,opacity),
-                (B,B,A,opacity),
-                (A,B,C,opacity),
-                (C,A,B,opacity),
-                (B,C,A,opacity),
-                (A,C,C,opacity),
-                (C,A,C,opacity),
-                (C,C,A,opacity)]
+level_colors = [(A,C,C,opacity),#1 Red-ish
+                (C,A,C,opacity),#2 Green-ish
+                (C,C,A,opacity),#3 Blue-sih
+                (A,B,C,opacity),#4 Pink-ish
+                (C,A,B,opacity),#5 Cyan-ish
+                (B,C,A,opacity),#6 Violet-ish
+                (A,D,C,opacity),#7 Orange-ish
+                (0,A,A,opacity),#8 Cyan
+                (A,0,A,opacity)]#9 Violet
 
 # First view that we use
 ResetView()
