@@ -49,7 +49,7 @@ view1 = View3DAttributes()
 view1.focus      = (0.05, 0.05, 0.05)
 view1.viewUp     = (0, 0, 1)
 view1.viewNormal = (-0.5, 1, 0.1);
-view1.imageZoom  = 5.0
+view1.imageZoom  = 7.0
 view1.imagePan   = (0, 0.0)
 
 # Second view that we use

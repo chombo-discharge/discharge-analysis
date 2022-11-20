@@ -8,7 +8,7 @@ step         = 1250
 directory    = "/home/robertm/Projects/chombo-discharge/Exec/Examples/ItoPlasma/plt"
 do_eb        = True
 do_volume    = True
-dark_bg      = False
+dark_bg      = True
 variable     = "Electron phi"
 
 def set_annotation():
@@ -19,12 +19,12 @@ def set_annotation():
     atts = AnnotationAttributes()
     atts.databaseInfoTimeScale  = 1E9
     atts.axes2D.visible         = 0
-    atts.axes3D.visible         = 0
+    atts.axes3D.visible         = 1
     atts.axes3D.setBBoxLocation = 0
     atts.userInfoFlag           = 0
-    atts.databaseInfoFlag       = 0
-    atts.legendInfoFlag         = 0
-    atts.axes3D.triadFlag       = 0
+    atts.databaseInfoFlag       = 1
+    atts.legendInfoFlag         = 1
+    atts.axes3D.triadFlag       = 1
     atts.axes3D.bboxFlag        = 1
 
     if(dark_bg):
@@ -72,35 +72,35 @@ def draw_volume(var):
 
     vatts = VolumeAttributes()
     vatts.legendFlag     = 0
-    vatts.samplesPerRay  = 500
+    vatts.samplesPerRay  = 5000
     vatts.rendererType   = vatts.RayCastingOSPRay
     vatts.useColorVarMin = 1
     vatts.useColorVarMax = 1
     vatts.colorVarMin    = 0.0
-    vatts.colorVarMax    = 2.0
+    vatts.colorVarMax    = 1.0
     vatts.scaling        = vatts.Linear
     vatts.smoothData     = 1
     vatts.lightingFlag   = 1
-    vatts.materialProperties = (0.0, 0.15, 0.00, 10)        
-    vatts.opacityAttenuation = 1.0
-    vatts.lowGradientLightingReduction = vatts.Higher
+    vatts.materialProperties = (0.8, 0.8, 0.05, 30)        
+    vatts.opacityAttenuation = 0.5
+    vatts.lowGradientLightingReduction = vatts.Lower
     vatts.rendererSamples = 2
-    vatts.gradientType = 0
+    vatts.gradientType = 1
 
     # Monkey with opacity
-    opacity = vatts.freeformOpacity
-    y = list(opacity)
-    for i in range(0,len(opacity)):
-        y[i] = max(0,i-30)
-    vatts.freeformOpacity = tuple(y)
+    # opacity = vatts.freeformOpacity
+    # y = list(opacity)
+    # for i in range(1,len(opacity)):
+    #     y[i] = 250
+    # vatts.freeformOpacity = tuple(y)
 
     vatts.ospraySpp = 1
-    vatts.osprayMinContribution=0.000
+    vatts.osprayMinContribution=0.0001
     vatts.osprayAoDistance=0.01
     vatts.osprayAoSamples=5
-    vatts.osprayOneSidedLightingFlag = 0
-    vatts.ospraySingleShadeFlag=0    
-    vatts.osprayAoTransparencyEnabledFlag = 0
+    vatts.osprayOneSidedLightingFlag = 1
+    vatts.ospraySingleShadeFlag=0
+    vatts.osprayAoTransparencyEnabledFlag = 1
     vatts.osprayShadowsEnabledFlag = 0
     vatts.osprayUseGridAcceleratorFlag = 0
     
@@ -128,10 +128,10 @@ DrawPlots()
 
 ResetView()
 view = View3DAttributes()
-view.focus      = (0.05, 0.05, 0.045)
+view.focus      = (0.05, 0.05, 0.05)
 view.viewUp     = (0, 0, 1)
-view.viewNormal = (0.0, 1, 0.0);
-view.imageZoom  = 50
+view.viewNormal = (-0.5, 1, 0.1);
+view.imageZoom  = 7.0
 view.imagePan   = (0, 0.0)
 SetView3D(view)
 
