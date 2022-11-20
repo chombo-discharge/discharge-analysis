@@ -12,6 +12,10 @@ framename    = "patches"
 do_eb        = True
 do_grid      = True
 do_iso       = True
+outdir       = "Patches-frames"
+
+if not os.path.exists(outdir):
+    os.mkdir(outdir)
 
 # For drawing the isosurface
 color_field  = "Electric field_magnitude"
@@ -74,7 +78,7 @@ def set_output(prefix, frame):
     satts.height   = 1024
     satts.fileName = str(prefix) + str(format(frame, "05d"))
     satts.outputToCurrentDirectory = 0
-    satts.outputDirectory = "./Patches-frames"
+    satts.outputDirectory = outdir
     SetSaveWindowAttributes(satts)
 
 def set_annotation():

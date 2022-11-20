@@ -6,25 +6,28 @@ dim         (int)    : Dimension
 basename    (string) : Plot file name prefix
 directory   (string) : Path to plot files
 framename   (string) : Prefix for frame names
-color_field (string) : Variable to plot
-slice_field (string) : Variable to slice plot by (i.e, the isosurface variable)
-slice_value (string) : Isosurface value
+variable    (string) : Variable to plot
 firstframe  (int)    : First plot file to use
 lastframe   (int)    : Last plot file to use
 framestep   (int)    : Increment between plot files
 '''
 
+import os
+
+
+
 dim          = 3
 basename     = "simulation"
 directory    = "/home/robertm/Projects/chombo-discharge/Exec/Examples/ItoPlasma/plt"
-framename    = "electrons"
-color_field  = "Electric field_magnitude"
-slice_field  = "Electron phi"
-slice_value  = 1.E18
+framename    = "frame"
+variable     = "Electron phi"
 firstframe   = 0
 lastframe    = 20
 framestep    = 1
-outdir       = "Isosurface-frames"
+do_volume    = True
+do_eb        = True
+dark_bg      = True
+outdir       = "Volume-frames"
 
 if not os.path.exists(outdir):
     os.mkdir(outdir)
@@ -67,21 +70,21 @@ def set_output(prefix, frame):
     satts.height   = 1024
     satts.fileName = str(prefix) + str(format(frame, "05d"))
     satts.outputToCurrentDirectory = 0
-    satts.outputDirectory = outdir
+    satts.outputDirectory = "./Volume-frames"
     SetSaveWindowAttributes(satts)
 
-def set_default_view():
+def set_view():
     '''
     Set the default view.
     '''
     
     ResetView()
     view            = GetView3D()
-    view.focus      = (0.00, 0.05, 0.05)
+    view.focus      = (0.05, 0.05, 0.05)
     view.viewUp     = (0, 0, 1)
-    view.viewNormal = (0.5, 1, 0);
-    view.imageZoom  = 7
-    view.imagePan   = (0, 0.04)
+    view.viewNormal = (-0.5, 1, 0.1);
+    view.imageZoom  = 7.0
+    view.imagePan   = (0, 0.0)    
     SetView3D(view)
 
 def set_annotation():
@@ -99,6 +102,10 @@ def set_annotation():
     atts.legendInfoFlag         = 1
     atts.axes3D.triadFlag       = 1
     atts.axes3D.bboxFlag        = 1
+
+    if(dark_bg):
+        atts.backgroundColor = (0,0,0,255)
+        atts.foregroundColor = (255,255,255,255)    
     
     SetAnnotationAttributes(atts)
 
@@ -131,36 +138,50 @@ def draw_boundaries():
     
     SetPlotOptions(batts)
 
-def draw_isosurface(color_variable, surface_variable, slice_val):
-    ''' 
-    Draw an isosurface plot of the input variable
+def draw_volume(var):
+    AddPlot("Volume", var)
 
-    Parameters: 
-    color_variable   (string): Variable to plot
-    surface_variable (string): Variable to slice by
-    slice_val        (float) : Isosurface value
-    '''
+    # For turning off levels
+    # silr = SILRestriction()
+    # silr.TurnOffSet(5);   
+    # silr.TurnOffSet(6);
+    # SetPlotSILRestriction(silr,0)    
 
-    # Add pseudocolor plot
-    AddPlot("Pseudocolor", color_variable)
-    p = PseudocolorAttributes()
-    p.min, p.minFlag = 0.0, 1
-    p.max, p.maxFlag = 1E7, 1
-    p.legendFlag = 0
-    p.centering = 1
-    p.smoothingLevel=1
-    SetPlotOptions(p)
+    vatts = VolumeAttributes()
+    vatts.legendFlag     = 0
+    vatts.samplesPerRay  = 5000
+    vatts.rendererType   = vatts.RayCastingOSPRay
+    vatts.useColorVarMin = 1
+    vatts.useColorVarMax = 1
+    vatts.colorVarMin    = 0.0
+    vatts.colorVarMax    = 1.0
+    vatts.scaling        = vatts.Linear
+    vatts.smoothData     = 1
+    vatts.lightingFlag   = 1
+    vatts.materialProperties = (0.8, 0.8, 0.05, 30)        
+    vatts.opacityAttenuation = 0.5
+    vatts.lowGradientLightingReduction = vatts.Lower
+    vatts.rendererSamples = 2
+    vatts.gradientType = 1
 
-    # Slice by isosurface
-    AddOperator("Isosurface");
-    s = IsosurfaceAttributes()
-    s.contourNLevels = 1
-    s.variable       = surface_variable
-    s.minFlag = 1
-    s.min = slice_val
+    # Monkey with opacity
+    # opacity = vatts.freeformOpacity
+    # y = list(opacity)
+    # for i in range(1,len(opacity)):
+    #     y[i] = 250
+    # vatts.freeformOpacity = tuple(y)
 
-    SetOperatorOptions(s)
-
+    vatts.ospraySpp = 1
+    vatts.osprayMinContribution=0.0001
+    vatts.osprayAoDistance=0.01
+    vatts.osprayAoSamples=5
+    vatts.osprayOneSidedLightingFlag = 1
+    vatts.ospraySingleShadeFlag=0
+    vatts.osprayAoTransparencyEnabledFlag = 1
+    vatts.osprayShadowsEnabledFlag = 0
+    vatts.osprayUseGridAcceleratorFlag = 0
+    
+    SetPlotOptions(vatts)
     
 def set_slider():
     ''' 
@@ -170,9 +191,12 @@ def set_slider():
     slider.text = "Time = $time ns"
     slider.shaded=0
     slider.timeFormatString = "%.2f"
+    slider.startColor = (0, 255, 255, 0)
+    slider.endColor = (255, 255, 255, 0)    
+    print(slider)
 
 # Default things like view, annotation, render, slider, etc. 
-set_default_view()
+set_view()
 set_annotation()
 set_render_attributes()
 set_slider()
@@ -190,8 +214,11 @@ for ts in range(firstframe, lastframe+framestep, framestep):
     set_output(framename, fidx)
 
     # Boundary
-    draw_boundaries()
-    draw_isosurface(color_field, slice_field, slice_value)
+    if(do_eb):
+        draw_boundaries()
+    if(do_volume):
+        DefineScalarExpression("scaled_variable", "<" + variable + ">" + "* 1E-20")
+        draw_volume("scaled_variable")    
 
     # Draw and save
     DrawPlots()
