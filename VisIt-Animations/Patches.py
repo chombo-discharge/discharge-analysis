@@ -12,6 +12,10 @@ framename    = "patches"
 do_eb        = True
 do_grid      = True
 do_iso       = True
+outdir       = "Patches-frames"
+
+if not os.path.exists(outdir):
+    os.mkdir(outdir)
 
 # For drawing the isosurface
 color_field  = "Electric field_magnitude"
@@ -28,15 +32,20 @@ transLevel = 3
 '''
 Colors to use when plotting levels
 '''
+A = 255
+B = 224
+C = 32
+D = 128
 opacity = 220
-level_colors = [(255,0,0,opacity),
-                (0,255,0,opacity),
-                (0,0,255,opacity),
-                (125,125,0,opacity),
-                (0,125,125,opacity),
-                (125,0,125,opacity),
-                (125,0,125,opacity),
-                (125,0,125,opacity)]
+level_colors = [(A,C,C,opacity),#1 Red-ish
+                (C,A,C,opacity),#2 Green-ish
+                (C,C,A,opacity),#3 Blue-sih
+                (A,B,C,opacity),#4 Pink-ish
+                (C,A,B,opacity),#5 Cyan-ish
+                (B,C,A,opacity),#6 Violet-ish
+                (A,D,C,opacity),#7 Orange-ish
+                (0,A,A,opacity),#8 Cyan
+                (A,0,A,opacity)]#9 Violet
 
 # First view that we use
 ResetView()
@@ -44,7 +53,7 @@ view1 = View3DAttributes()
 view1.focus      = (0.05, 0.05, 0.05)
 view1.viewUp     = (0, 0, 1)
 view1.viewNormal = (-0.5, 1, 0.1);
-view1.imageZoom  = 5.0
+view1.imageZoom  = 7.0
 view1.imagePan   = (0, 0.0)
 
 # Second view that we use
@@ -69,7 +78,7 @@ def set_output(prefix, frame):
     satts.height   = 1024
     satts.fileName = str(prefix) + str(format(frame, "05d"))
     satts.outputToCurrentDirectory = 0
-    satts.outputDirectory = "./Patches-frames"
+    satts.outputDirectory = outdir
     SetSaveWindowAttributes(satts)
 
 def set_annotation():
