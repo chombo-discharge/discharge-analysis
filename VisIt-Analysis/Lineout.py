@@ -54,7 +54,7 @@ fout.close()
     
 DeleteAllPlots()        
 SetActiveWindow(1)
-# DeleteAllPlots()
+DeleteAllPlots()
 CloseDatabase(args.database)
 
 exit()
